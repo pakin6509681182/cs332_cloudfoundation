@@ -24,7 +24,33 @@ def list_page():
 
 @app.route('/profile', endpoint='profile')
 def profile_page():
-    return render_template('profile.html')
+    username = session.get('username')
+    access_token = session.get('access_token')
+    if not username or not access_token:
+        flash('You need to log in first.', 'error')
+        return redirect(url_for('login'))
+    try:
+        response = cognito.get_user(
+            AccessToken=access_token
+        )
+        user_attributes = {attr['Name']: attr['Value'] for attr in response['UserAttributes']}
+        user_info = {
+            'username': username,
+            'email': user_attributes.get('email'),
+            'fullname': user_attributes.get('name'),
+            'phone': user_attributes.get('phone_number'),
+            'faculty': user_attributes.get('custom:faculty'),
+            'student_id': user_attributes.get('custom:student_id'),
+            'club_member': user_attributes.get('custom:club_member'),
+            'dob': user_attributes.get('custom:dob')
+        }
+    except ClientError as e:
+        error_message = e.response['Error']['Message']
+        print(f"Error: {error_message}")
+        flash(error_message, 'error')
+        return redirect(url_for('login'))
+
+    return render_template('profile.html', user_info=user_info)
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -108,5 +134,10 @@ def signup():
 def signup_success():
     return "Signup successful! Please verify your email."
 
+@app.route('/logout')
+def logout():
+    session.clear()
+    #flash('You have been logged out.', 'success')
+    return redirect(url_for('login'))
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
