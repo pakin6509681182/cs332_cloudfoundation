@@ -29,7 +29,7 @@ def profile_page():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        email = request.form['email']
+        username = request.form['username']
         password = request.form['password']
 
         try:
@@ -37,7 +37,7 @@ def login():
             response = cognito.initiate_auth(
                 AuthFlow='USER_PASSWORD_AUTH',
                 AuthParameters={
-                    'USERNAME': email,
+                    'USERNAME': username,
                     'PASSWORD': password
                 },
                 ClientId=APP_CLIENT_ID
