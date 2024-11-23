@@ -55,14 +55,14 @@
     <main>
         <section class="profile">
             <h1>Profile</h1>
-            <p>Log in to borrow equipment</p>
-            <a href="{{ url_for('login') }}">
-                <button class="login-btn">Log In</button>
-            </a>
-            <p>Don't have an account?</p>
-            <a href="{{ url_for('signup') }}">
-                <button class="signup-btn">Sign Up</button>
-            </a>
+            <p>Username: {{ user_info.username }}</p>
+            <p>Full Name: {{ user_info.fullname }}</p>
+            <p>Email: {{ user_info.email }}</p>
+            <p>Phone: {{ user_info.phone }}</p>
+            <p>Faculty: {{ user_info.faculty }}</p>
+            <p>Student ID: {{ user_info.student_id }}</p>
+            <p>Club Member: {{ user_info.club_member }}</p>
+            <p>Date of Birth: {{ user_info.dob }}</p>
         </section>
     </main>
 
