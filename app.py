@@ -54,6 +54,9 @@ def profile_page():
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
+    if 'username' in session and 'access_token' in session:
+        return redirect(url_for('profile'))
+    
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
