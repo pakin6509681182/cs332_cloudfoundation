@@ -45,6 +45,8 @@ def login():
 
             # ถ้าสำเร็จ ให้เก็บ Access Token หรือดำเนินการต่อ
             access_token = response['AuthenticationResult']['AccessToken']
+            session['username'] = username
+            session['access_token'] = access_token
             flash('Login successful!', 'success')
             return redirect(url_for('login'))
 
