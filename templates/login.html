@@ -55,7 +55,13 @@
               confirmButtonText: 'Go to Homepage',
               cancelButtonText: 'Go to My Profile',
               reverseButtons: true
-            })
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = "{{ url_for('home') }}";
+                } else if (result.dismiss === Swal.DismissReason.cancel) {
+                    window.location.href = "{{ url_for('profile') }}";
+                }
+            });
           } else if ('{{ category }}' == 'error') {
               Swal.fire({
                   icon: 'error',
