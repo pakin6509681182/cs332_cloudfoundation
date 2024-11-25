@@ -41,12 +41,16 @@
                 </div>
                 <!-- User -->
                 <div class="user">
-                    <a href="{{ url_for('profile') }}">
-                        <img src="{{ url_for('static', filename='images/profile.png') }}" alt="Profile" />
-                    </a>
-                    <div class="username">
-                        <a href="{{ url_for('profile') }}">Username</a>
-                    </div>
+                    {% if session.username %}
+                        <a href="{{ url_for('profile') }}">
+                            <img src="{{ url_for('static', filename='images/profile.png') }}" alt="Profile" />
+                        </a>
+                        <div class="username">
+                            <a href="{{ url_for('profile') }}">{{ session.username }}</a>
+                        </div>
+                    {% else %}
+                        <a href="{{ url_for('login') }}" class="login-button">Login</a>
+                    {% endif %}
                 </div>
             </div>
         </nav>
