@@ -121,6 +121,7 @@ def signup():
                     {'Name': 'custom:student_id', 'Value': student_id},
                     {'Name': 'custom:club_member', 'Value': club_member},
                     {'Name': 'custom:dob', 'Value': dob},
+                    {'Name': 'custom:role', 'Value': 'user'}
                 ]
             )
             flash('You have successfully signed up!', 'success')
