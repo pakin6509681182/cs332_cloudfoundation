@@ -77,7 +77,7 @@ def login():
             session['username'] = username
             session['access_token'] = access_token
             flash('Login successful!', 'success')
-            return redirect(url_for('login'))
+            return redirect(url_for('profile'))
 
         except ClientError as e:
             error_message = e.response['Error']['Message']
