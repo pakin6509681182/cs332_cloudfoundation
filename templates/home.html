@@ -48,6 +48,7 @@
                         <div class="username">
                             <a href="{{ url_for('profile') }}">{{ session.username }}</a>
                         </div>
+                        <a href="{{ url_for('logout') }}" class="logout-button">Logout</a>
                     {% else %}
                         <a href="{{ url_for('login') }}" class="login-button">Login</a>
                     {% endif %}
