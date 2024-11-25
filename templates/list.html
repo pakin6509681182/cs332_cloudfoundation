@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ToolTrack</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/list.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&display=swap" rel="stylesheet">
+
+</head>
+
+<body>
+    <header>
+        <nav>
+            <!-- โลโก้ -->
+            <div class="logo">
+                <a href="{{ url_for('home') }}"><img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" /></a>
+            </div>
+            <!-- เมนู -->
+            <ul class="menu">
+                <li><a href="{{ url_for('home') }}">Home</a></li>
+                <li><a href="{{ url_for('equipment') }}">Equipment</a></li>
+                <li><a href="{{ url_for('list') }}">List</a></li>
+            </ul>
+            <!-- Username -->
+            <div class="user-section">
+                <!--Notification-->
+                <div class="notification">
+                    <a href="#" id="notification-icon"><img src="{{ url_for('static', filename='images/bell.png') }}" alt="Notification Bell" /></a>
+                    <div class="notification-badge">3</div> <!-- ตัวเลขแจ้งเตือน -->
+                        <!-- Dropdown Notifications -->
+                        <div class="notification-dropdown" id="notification-dropdown">
+                        <h4>Notifications</h4>
+                        <ul>
+                        <li>Your equipment loan is due tomorrow.</li>
+                        <li>Equipment XYZ is overdue!</li>
+                        <li>Reminder: Return equipment ABC today.</li>
+                        </ul>
+                        </div>
+                </div>
+                <!-- User -->
+                <div class="user">
+                    <a href="{{ url_for('profile') }}">
+                        <img src="{{ url_for('static', filename='images/profile.png') }}" alt="Profile" />
+                    </a>
+                    <div class="username">
+                        <a href="{{ url_for('profile') }}">Username</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+    
+    <main>
+        <!-- Section: List -->
+        <section class="list-container">
+            <h1>List</h1>
+            <table class="equipment-list">
+                <thead>
+                    <tr>
+                        <th>No.</th>
+                        <th>Model</th>
+                        <th>Status</th>
+                        <th>Quantity</th>
+                        <th>Return Date</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- ตัวอย่างรายการ -->
+                    <tr>
+                        <td>1</td>
+                        <td>Drill Machine</td>
+                        <td>Borrowed</td>
+                        <td>1</td>
+                        <td>2024-11-30</td>
+                        <td><button class="return-btn">Return</button></td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>Hammer</td>
+                        <td>Returned</td>
+                        <td>2</td>
+                        <td>2024-11-20</td>
+                        <td><button class="return-btn" disabled>Return</button></td>
+                    </tr>
+                    <tr>
+                        <td>3</td>
+                        <td>Screwdriver Set</td>
+                        <td>Pending Approval</td>
+                        <td>1</td>
+                        <td>2024-12-01</td>
+                        <td><button class="return-btn" disabled>Return</button></td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+    </main>
+
+    <!--Javascripts-->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const notificationIcon = document.getElementById("notification-icon");
+            const notificationDropdown = document.getElementById("notification-dropdown");
+        
+            notificationIcon.addEventListener("click", function (event) {
+                event.preventDefault();
+                // Toggle the visibility of the dropdown
+                if (notificationDropdown.style.display === "none" || notificationDropdown.style.display === "") {
+                    notificationDropdown.style.display = "block";
+                } else {
+                    notificationDropdown.style.display = "none";
+                }
+            });
+        
+            // Close the dropdown when clicking outside
+            document.addEventListener("click", function (event) {
+                if (!notificationIcon.contains(event.target) && !notificationDropdown.contains(event.target)) {
+                    notificationDropdown.style.display = "none";
+                }
+            });
+        });
+    </script>
+</body>
+</html>

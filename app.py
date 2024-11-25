@@ -18,10 +18,6 @@ def main_page():
 def equipment_page():
     return render_template('equipment.html')
 
-@app.route('/list', endpoint='list')
-def list_page():
-    return render_template('list.html')
-
 @app.route('/profile', endpoint='profile')
 def profile_page():
     username = session.get('username')
@@ -143,5 +139,22 @@ def logout():
     session.clear()
     #flash('You have been logged out.', 'success')
     return redirect(url_for('login'))
+
+@app.route('/details_camera')
+def details_camera():
+    return render_template('detailscamera.html')
+
+@app.route('/details_accessories')
+def details_accessories():
+    return render_template('detailsaccessories.html')
+
+@app.route('/details_lenses')
+def details_lenses():
+    return render_template('detailslenses.html')
+
+@app.route('/list')
+def list():
+    return render_template('list.html')
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
