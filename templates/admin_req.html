@@ -7,6 +7,7 @@
     <title>ToolTrack</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_req.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
 
 </head>
 
@@ -85,5 +86,38 @@
             </div>
         </section>
     </main>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        {% for category, message in messages %}
+        <script>
+          if ('{{ category }}' == 'success') {
+            Swal.fire({
+              icon: 'success',
+              title: '{{ message }}',
+              text: 'Welcome,',
+              showCancelButton: true,
+              confirmButtonText: 'Go to Homepage',
+              cancelButtonText: 'Go to My Profile',
+              reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = "{{ url_for('home') }}";
+                } else if (result.dismiss === Swal.DismissReason.cancel) {
+                    window.location.href = "{{ url_for('profile') }}";
+                }
+            });
+          } else if ('{{ category }}' == 'error') {
+              Swal.fire({
+                  icon: 'error',
+                  title: '{{ message }}',
+                  showConfirmButton: true
+              })
+          }
+         
+          
+      </script>
+        {% endfor %}
+    {% endif %}
+    {% endwith %}
 </body>
 </html>
