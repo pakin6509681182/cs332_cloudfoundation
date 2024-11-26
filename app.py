@@ -1,5 +1,6 @@
 from flask import Flask, request, render_template, redirect, url_for, flash, session
 from botocore.exceptions import ClientError
+from boto3.dynamodb.conditions import Attr
 import boto3
 
 app = Flask(__name__)
@@ -9,6 +10,10 @@ app.secret_key = 'your_secret_key'  # จำเป็นต้องมี secre
 USER_POOL_ID = 'us-east-1_TO6EORboO'
 APP_CLIENT_ID = '4p535l80p9dt798qq9q168709o'
 cognito = boto3.client('cognito-idp', region_name='us-east-1')
+
+# DynamoDB Configuration
+dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
+EquipmentTable = dynamodb.Table('Equipment')
 
 @app.route('/home', endpoint='home')
 def main_page():
@@ -196,7 +201,12 @@ def logout():
 
 @app.route('/details_camera')
 def details_camera():
-    return render_template('detailscamera.html')
+    response = EquipmentTable.scan(
+        FilterExpression=Attr('Category').eq('Camera')
+    )
+    items = response['Items']
+    print(items)
+    return render_template('detailscamera.html',items=items)
 
 @app.route('/details_accessories')
 def details_accessories():
