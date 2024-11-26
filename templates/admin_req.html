@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ToolTrack</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_req.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&display=swap" rel="stylesheet">
+
+</head>
+
+<body>
+    <header>
+        <nav>
+            <!-- โลโก้ -->
+            <div class="logo">
+                <a href="{{ url_for('home') }}"><img src="{{ url_for('static', filename='images/logo.png') }}" alt="Logo" /></a>
+            </div>
+            <!-- เมนู -->
+            <ul class="menu">
+                <li><a href="{{ url_for('admin_req') }}">Request</a></li>
+                <li><a href="{{ url_for('admin_equipment') }}">Equipment</a></li>
+                <li><a href="{{ url_for('admin_list') }}">List</a></li>
+            </ul>
+            <!-- Username -->
+            <div class="user-section">
+                <!-- User -->
+                <div class="user">
+                    <a href="{{ url_for('profile') }}">
+                        <img src="{{ url_for('static', filename='images/profile.png') }}" alt="Profile" />
+                    </a>
+                    <div class="username">
+                        <a href="{{ url_for('profile') }}">admin</a>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+    
+    <main>
+        <section class="request">
+            <h1>Request</h1>
+    
+            <!-- Borrowed equipment table -->
+            <div class="request-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>No.</th>
+                            <th>Borrow Date</th>
+                            <th>Item</th>
+                            <th>Quantity</th>
+                            <th>Return Date</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>1</td>
+                            <td>22 November 2024</td>
+                            <td>EOS 200D II</td>
+                            <td>1</td>
+                            <td>25 November 2024</td>
+                            <td><button class="action-button">approved</button></td>
+                        </tr>
+                        <tr>
+                            <td>2</td>
+                            <td>20 November 2024</td>
+                            <td>EOS R50 (RF-S18-45mm f/4.5-6.3 IS STM & RF-S55-210mm f/5-7.1 IS STM)</td>
+                            <td>1</td>
+                            <td>23 November 2024</td>
+                            <td><button class="action-button" disabled>approved</button></td>
+                        </tr>
+                        <tr>
+                            <td>3</td>
+                            <td>21 November 2024</td>
+                            <td>EOS R100 (RF-S18-45mm f/4.5-6.3 IS STM)</td>
+                            <td>1</td>
+                            <td>26 November 2024</td>
+                            <td><button class="action-button">approved</button></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</body>
+</html>

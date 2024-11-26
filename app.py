@@ -156,5 +156,29 @@ def details_lenses():
 def list():
     return render_template('list.html')
 
+@app.route('/admin_req')
+def admin_req():
+    return render_template('admin_req.html')
+
+@app.route('/admin_list')
+def admin_list():
+    return render_template('admin_list.html')
+
+@app.route('/admin_lenses')
+def admin_lenses():
+    return render_template('admin_lenses.html')
+
+@app.route('/admin_equipment')
+def admin_equipment():
+    return render_template('admin_equipment.html')
+
+@app.route('/admin_accessories')
+def admin_accessories():
+    return render_template('admin_accessories.html')
+
+@app.route('/admin_camera')
+def admin_camera():
+    return render_template('admin_camera.html')
+
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
