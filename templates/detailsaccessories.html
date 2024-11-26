@@ -69,46 +69,18 @@
                         </tr>
                     </thead>
                     <tbody>
+                        {% for item in items %}
                         <tr>
-                            <td>1</td>
-                            <td>USB Power Adapter PD-E2</td>
-                            <td style="color: red;">Not Available</td>
-                            <td>0</td>
-                            <td>3 December 2024</td>
-                            <td><button class="action-button" disabled>Borrow</button></td>
+                            <td>{{ loop.index }}</td>
+                            <td>{{ item.Name }}</td>
+                            <td style="color: {{ 'green' if item.Status == 'Available' else 'red' }};">{{ item.Status }}</td>
+                            <td>{{ item.Quantity }}</td>
+                            <td>{{ item.DueDate if item.DueDate else '-' }}</td>
+                            <td>
+                                <button class="action-button" {% if item.Status != 'Available' %}disabled{% endif %}>Borrow</button>
+                            </td>
                         </tr>
-                        <tr>
-                            <td>2</td>
-                            <td>Speedlite EL-10</td>
-                            <td style="color: red;">Not Available</td>
-                            <td>0</td>
-                            <td>25 November 2024</td>
-                            <td><button class="action-button" disabled>Borrow</button></td>
-                        </tr>
-                        <tr>
-                            <td>3</td>
-                            <td>Speedlite EL-5</td>
-                            <td style="color: red;">Not Available</td>
-                            <td>0</td>
-                            <td>1 December 2024</td>
-                            <td><button class="action-button" disabled>Borrow</button></td>
-                        </tr>
-                        <tr>
-                            <td>4</td>
-                            <td>AC Adapter AC-E6N</td>
-                            <td style="color: red;">Not Available</td>
-                            <td>0</td>
-                            <td>29 November 2024</td>
-                            <td><button class="action-button" disabled>Borrow</button></td>
-                        </tr>
-                        <tr>
-                            <td>5</td>
-                            <td>Battery Charger LC-E12E</td>
-                            <td style="color: red;">Not Available</td>
-                            <td>0</td>
-                            <td>30 November 2024</td>
-                            <td><button class="action-button" disabled>Borrow</button></td>
-                        </tr>
+                        {% endfor %}
                     </tbody>
                 </table>
             </div>

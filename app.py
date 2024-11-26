@@ -210,7 +210,12 @@ def details_camera():
 
 @app.route('/details_accessories')
 def details_accessories():
-    return render_template('detailsaccessories.html')
+    response = EquipmentTable.scan(
+        FilterExpression=Attr('Category').eq('Accessories')
+    )
+    items = response['Items']
+    print(items)
+    return render_template('detailsaccessories.html',items=items)
 
 @app.route('/details_lenses')
 def details_lenses():
