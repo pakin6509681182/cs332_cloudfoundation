@@ -68,12 +68,32 @@ def login():
                 ClientId=APP_CLIENT_ID
             )
 
+             # ตรวจสอบว่ามี ChallengeName หรือไม่
+            if 'ChallengeName' in response and response['ChallengeName'] == 'NEW_PASSWORD_REQUIRED':
+                session['username'] = username
+                session['session'] = response['Session']
+                flash('You need to change your password.', 'info')
+                return redirect(url_for('change_password'))
+            
             # ถ้าสำเร็จ ให้เก็บ Access Token หรือดำเนินการต่อ
             access_token = response['AuthenticationResult']['AccessToken']
             session['username'] = username
             session['access_token'] = access_token
-            flash('Login successful!', 'success')
-            return redirect(url_for('profile'))
+
+            # ดึงข้อมูลผู้ใช้จาก Cognito
+            user_response = cognito.get_user(
+                AccessToken=access_token
+            )
+            user_attributes = {attr['Name']: attr['Value'] for attr in user_response['UserAttributes']}
+            role = user_attributes.get('custom:role')
+
+            # ตรวจสอบว่าเป็นแอดมินหรือไม่
+            if role == 'admin':
+                flash('Login successful as admin!', 'success')
+                return redirect(url_for('admin_req'))
+            else:
+                flash('Login successful!', 'success')
+                return redirect(url_for('profile'))
 
         except ClientError as e:
             error_message = e.response['Error']['Message']
@@ -83,6 +103,40 @@ def login():
 
     return render_template('login.html')
 
+@app.route('/change_password', methods=['GET', 'POST'])
+def change_password():
+    if 'username' not in session or 'session' not in session:
+        flash('You need to log in first.', 'error')
+        return redirect(url_for('login'))
+
+    if request.method == 'POST':
+        new_password = request.form['new_password']
+
+        try:
+            # เรียกใช้งาน Cognito เพื่อเปลี่ยนรหัสผ่าน
+            response = cognito.respond_to_auth_challenge(
+                ClientId=APP_CLIENT_ID,
+                ChallengeName='NEW_PASSWORD_REQUIRED',
+                Session=session['session'],
+                ChallengeResponses={
+                    'USERNAME': session['username'],
+                    'NEW_PASSWORD': new_password
+                }
+            )
+
+            # ถ้าสำเร็จ ให้เก็บ Access Token หรือดำเนินการต่อ
+            access_token = response['AuthenticationResult']['AccessToken']
+            session.clear()  # ล้างข้อมูลใน session
+            flash('Password changed successfully!', 'success')
+            return redirect(url_for('login'))
+
+        except ClientError as e:
+            error_message = e.response['Error']['Message']
+            print(f"Error: {error_message}")
+            flash(error_message, 'error')
+            return redirect(url_for('change_password'))
+
+    return render_template('change_password.html')
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
