@@ -1,4 +1,4 @@
-from flask import Flask, request, render_template, redirect, url_for, flash, session
+from flask import Flask, request, render_template, redirect, url_for, flash, session, jsonify
 from botocore.exceptions import ClientError
 from boto3.dynamodb.conditions import Attr
 import boto3
@@ -207,6 +207,21 @@ def details_camera():
     items = response['Items']
     print(items)
     return render_template('detailscamera.html',items=items)
+
+@app.route('/borrow/<equipment_id>', methods=['POST'])
+def borrow_equipment(equipment_id):
+    try:
+        response = EquipmentTable.update_item(
+            Key={'EquipmentID': equipment_id},
+            UpdateExpression="set #s = :s",
+            ExpressionAttributeNames={'#s': 'Status'},
+            ExpressionAttributeValues={':s': 'Pending'},
+            ReturnValues="UPDATED_NEW"
+        )
+        return jsonify(success=True)
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify(success=False), 500
 
 @app.route('/details_accessories')
 def details_accessories():

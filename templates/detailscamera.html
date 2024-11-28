@@ -70,10 +70,10 @@
                     </thead>
                     <tbody>
                         {% for item in items %}
-                        <tr>
+                        <tr data-equipment-id="{{ item.EquipmentID }}">
                             <td>{{ loop.index }}</td>
                             <td>{{ item.Name }}</td>
-                            <td style="color: {{ 'green' if item.Status == 'Available' else 'red' }};">{{ item.Status }}</td>
+                            <td style="color: {{ 'green' if item.Status == 'Available' else 'yellow' if item.Status == 'Pending' else 'red' }};">{{ item.Status }}</td>
                             <td>{{ item.Quantity }}</td>
                             <td>{{ item.DueDate if item.DueDate else '-' }}</td>
                             <td>
@@ -89,7 +89,7 @@
     
 
     <!--Javascripts-->
-    <script>
+    <!-- <script>
         document.addEventListener("DOMContentLoaded", function () {
             const notificationIcon = document.getElementById("notification-icon");
             const notificationDropdown = document.getElementById("notification-dropdown");
@@ -111,7 +111,43 @@
                 }
             });
         });
-    </script>
-        
+    </script> -->
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const borrowButtons = document.querySelectorAll(".action-button");
+
+        borrowButtons.forEach(button => {
+            button.addEventListener("click", function () {
+                console.log("Borrow button clicked"); // Debug log
+                const row = this.closest("tr");
+                const equipmentId = row.getAttribute("data-equipment-id");
+                console.log("Equipment ID:", equipmentId); // Debug log
+
+                fetch(`/borrow/${equipmentId}`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({ status: "Pending" })
+                })
+                .then(response => {
+                    console.log("Fetch response:", response); // Debug log
+                    return response.json();
+                })
+                .then(data => {
+                    console.log("Response data:", data); // Debug log
+                    if (data.success) {
+                        row.querySelector("td:nth-child(3)").innerText = "Pending";
+                        row.querySelector("td:nth-child(3)").style.color = "yellow";
+                        this.disabled = true;
+                    } else {
+                        alert("Failed to borrow the equipment.");
+                    }
+                })
+                .catch(error => console.error("Error:", error));
+            });
+        });
+    });
+</script>
 </body>
 </html>
