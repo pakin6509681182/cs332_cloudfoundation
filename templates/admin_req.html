@@ -7,7 +7,6 @@
     <title>ToolTrack</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_req.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
 
 </head>
 
@@ -53,6 +52,7 @@
                             <th>Item</th>
                             <th>Quantity</th>
                             <th>Return Date</th>
+                            <th>Request Type</th>
                             <th>Action</th>
                         </tr>
                     </thead>
@@ -63,6 +63,7 @@
                             <td>EOS 200D II</td>
                             <td>1</td>
                             <td>25 November 2024</td>
+                            <td>Borrow</td>
                             <td><button class="action-button">approved</button></td>
                         </tr>
                         <tr>
@@ -71,6 +72,7 @@
                             <td>EOS R50 (RF-S18-45mm f/4.5-6.3 IS STM & RF-S55-210mm f/5-7.1 IS STM)</td>
                             <td>1</td>
                             <td>23 November 2024</td>
+                            <td>Borrow</td>
                             <td><button class="action-button" disabled>approved</button></td>
                         </tr>
                         <tr>
@@ -79,6 +81,7 @@
                             <td>EOS R100 (RF-S18-45mm f/4.5-6.3 IS STM)</td>
                             <td>1</td>
                             <td>26 November 2024</td>
+                            <td>Return</td>
                             <td><button class="action-button">approved</button></td>
                         </tr>
                     </tbody>
@@ -86,38 +89,5 @@
             </div>
         </section>
     </main>
-    {% with messages = get_flashed_messages(with_categories=true) %}
-    {% if messages %}
-        {% for category, message in messages %}
-        <script>
-          if ('{{ category }}' == 'success') {
-            Swal.fire({
-              icon: 'success',
-              title: '{{ message }}',
-              text: 'Welcome,',
-              showCancelButton: true,
-              confirmButtonText: 'Go to Homepage',
-              cancelButtonText: 'Go to My Profile',
-              reverseButtons: true
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    window.location.href = "{{ url_for('home') }}";
-                } else if (result.dismiss === Swal.DismissReason.cancel) {
-                    window.location.href = "{{ url_for('profile') }}";
-                }
-            });
-          } else if ('{{ category }}' == 'error') {
-              Swal.fire({
-                  icon: 'error',
-                  title: '{{ message }}',
-                  showConfirmButton: true
-              })
-          }
-         
-          
-      </script>
-        {% endfor %}
-    {% endif %}
-    {% endwith %}
 </body>
 </html>
