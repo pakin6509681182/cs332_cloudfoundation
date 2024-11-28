@@ -1,7 +1,10 @@
 from flask import Flask, request, render_template, redirect, url_for, flash, session, jsonify
 from botocore.exceptions import ClientError
 from boto3.dynamodb.conditions import Attr
+from datetime import datetime, timedelta
+import uuid
 import boto3
+import pytz
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # จำเป็นต้องมี secret key สำหรับ flash messages
@@ -14,6 +17,7 @@ cognito = boto3.client('cognito-idp', region_name='us-east-1')
 # DynamoDB Configuration
 dynamodb = boto3.resource('dynamodb', region_name='us-east-1')
 EquipmentTable = dynamodb.Table('Equipment')
+BorrowReturnRecordsTable = dynamodb.Table('BorrowReturnRecords')
 
 @app.route('/home', endpoint='home')
 def main_page():
@@ -21,6 +25,10 @@ def main_page():
 
 @app.route('/equipment', endpoint='equipment')
 def equipment_page():
+    if 'username' not in session:
+        flash('Please log in first', 'info')
+        print("Login")
+        return redirect(url_for('login'))
     return render_template('equipment.html')
 
 @app.route('/profile', endpoint='profile')
@@ -211,12 +219,43 @@ def details_camera():
 @app.route('/borrow/<equipment_id>', methods=['POST'])
 def borrow_equipment(equipment_id):
     try:
-        response = EquipmentTable.update_item(
+        # Step 1: Retrieve the equipment details
+        equipment = EquipmentTable.get_item(Key={'EquipmentID': equipment_id})
+        if 'Item' not in equipment:
+            return jsonify(success=False, message="Equipment not found"), 404
+
+        equipment_item = equipment['Item']
+        equipment_name = equipment_item['Name']  # Get the Name attribute
+        print(equipment_item)
+
+        # Step 2: Calculate the new due date (one week from today)
+        local_tz = pytz.timezone('Asia/Bangkok')  # Replace with your local timezone
+        now = datetime.now(local_tz)
+        due_date = (now + timedelta(weeks=1)).strftime('%Y-%m-%d %H:%M:%S')
+        # Step 3: Update the equipment status to Pending
+        EquipmentTable.update_item(
             Key={'EquipmentID': equipment_id},
-            UpdateExpression="set #s = :s",
+            UpdateExpression="set #s = :s, DueDate = :d",
             ExpressionAttributeNames={'#s': 'Status'},
-            ExpressionAttributeValues={':s': 'Pending'},
+            ExpressionAttributeValues={':s': 'Pending', ':d': due_date},
             ReturnValues="UPDATED_NEW"
+        )
+        # Step 4: Insert a new record into BorrowReturnRecords
+        record_id = str(uuid.uuid4())
+        user_id = session.get('username')  # Assuming user_id is stored in session
+        record_date = now.strftime('%Y-%m-%d %H:%M:%S')
+
+        BorrowReturnRecordsTable.put_item(
+            Item={
+                'record_id': record_id,
+                'user_id': user_id,
+                'equipment_id': equipment_id,
+                'equipment_name': equipment_name,
+                'type': 'borrow',
+                'record_date': record_date,
+                'due_date': due_date,
+                'status': 'pending_borrow'
+            }
         )
         return jsonify(success=True)
     except Exception as e:
@@ -236,8 +275,22 @@ def details_accessories():
 def details_lenses():
     return render_template('detailslenses.html')
 
-@app.route('/list')
-def list():
+@app.route('/list', endpoint='list')
+def list_records():
+    try:
+        user_id = session.get('username')  # Assuming user_id is stored in session
+        if not user_id:
+            flash('You need to log in first.', 'info')
+            return redirect(url_for('login'))  # Redirect to login if user is not logged in
+
+        response = BorrowReturnRecordsTable.scan(
+            FilterExpression=Attr('user_id').eq(user_id)
+        )
+        records = response['Items']
+        return render_template('list.html', records=records)
+    except Exception as e:
+        print(f"Error: {e}")
+        return "An error occurred while fetching data from DynamoDB."
     return render_template('list.html')
 
 @app.route('/admin_req')
