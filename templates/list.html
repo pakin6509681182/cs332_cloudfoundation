@@ -52,7 +52,7 @@
         </nav>
     </header>
     
-       <main>
+           <main>
         <!-- Section: List -->
         <section class="list-container">
             <h1>List</h1>
@@ -63,40 +63,23 @@
                         <th>Date Recorded</th>
                         <th>Model</th>
                         <th>Status</th>
-                        <th>Quantity</th>
                         <th>Return Date</th>
                         <th>Action</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <!-- ตัวอย่างรายการ -->
+                    {% for record in records %}
                     <tr>
-                        <td>1</td>
-                        <td>2024-10-01</td>
-                        <td>Drill Machine</td>
-                        <td>Borrowed</td>
-                        <td>1</td>
-                        <td>2024-11-30</td>
-                        <td><button class="return-btn">Return</button></td>
+                        <td>{{ loop.index }}</td>
+                        <td>{{ record.record_date }}</td>
+                        <td>{{ record.equipment_name }}</td>
+                        <td>{{ record.status }}</td>
+                        <td>{{ record.due_date }}</td>
+                        <td>
+                            <button class="return-btn" {% if record.status != 'Borrowed' %}disabled{% endif %}>Return</button>
+                        </td>
                     </tr>
-                    <tr>
-                        <td>2</td>
-                        <td>2024-09-15</td>
-                        <td>Hammer</td>
-                        <td>Returned</td>
-                        <td>2</td>
-                        <td>2024-11-20</td>
-                        <td><button class="return-btn" disabled>Return</button></td>
-                    </tr>
-                    <tr>
-                        <td>3</td>
-                        <td>2024-10-05</td>
-                        <td>Screwdriver Set</td>
-                        <td>Pending Approval</td>
-                        <td>1</td>
-                        <td>2024-12-01</td>
-                        <td><button class="return-btn" disabled>Return</button></td>
-                    </tr>
+                    {% endfor %}
                 </tbody>
             </table>
         </section>
