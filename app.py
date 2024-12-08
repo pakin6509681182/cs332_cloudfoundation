@@ -295,6 +295,20 @@ def list_records():
 
 @app.route('/admin_req')
 def admin_req():
+    try:
+        user_id = session.get('username')  # Assuming user_id is stored in session
+        if not user_id:
+            flash('You need to log in first.', 'info')
+            return redirect(url_for('login'))  # Redirect to login if user is not logged in
+
+        response = BorrowReturnRecordsTable.scan(
+            FilterExpression=Attr('status').eq('pending_borrow')
+        )
+        records = response['Items']
+        return render_template('admin_req.html', records=records)
+    except Exception as e:
+        print(f"Error: {e}")
+        return "An error occurred while fetching data from DynamoDB."
     return render_template('admin_req.html')
 
 @app.route('/admin_list')
