@@ -293,6 +293,38 @@ def list_records():
         return "An error occurred while fetching data from DynamoDB."
     return render_template('list.html')
 
+@app.route('/return', methods=['POST'])
+def return_item():
+    try:
+        local_tz = pytz.timezone('Asia/Bangkok')  # Replace with your local timezone
+        now = datetime.now(local_tz)
+        
+        record_id = request.form['record_id']
+        user_id = request.form['user_id']
+        equipment_id = request.form['equipment_id']
+        equipment_name = request.form['equipment_name']
+        record_date = request.form['record_date']
+        due_date = request.form['due_date']
+
+        record_id = str(uuid.uuid4())
+        user_id = session.get('username')  # Assuming user_id is stored in session
+        record_date = now.strftime('%Y-%m-%d %H:%M:%S')
+        BorrowReturnRecordsTable.put_item(
+            Item={
+                'record_id': record_id,
+                'user_id': user_id,
+                'equipment_id': equipment_id,
+                'equipment_name': equipment_name,
+                'type': 'borrow',
+                'record_date': record_date,
+                'due_date': due_date,
+                'status': 'pending_return'
+            }
+        )
+        return redirect(url_for('list'))
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @app.route('/admin_req')
 def admin_req():
     try:
