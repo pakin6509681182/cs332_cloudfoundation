@@ -311,6 +311,33 @@ def admin_req():
         return "An error occurred while fetching data from DynamoDB."
     return render_template('admin_req.html')
 
+@app.route('/approve/<record_id>/<equipment_id>/<userID>', methods=['POST'])
+def approve_record(record_id, equipment_id, userID):
+    try:
+        print(userID)
+        # Update the status in the Equipment table
+        EquipmentTable.update_item(
+            Key={'EquipmentID': equipment_id},
+            UpdateExpression="set #s = :s, #u = :u",
+            ExpressionAttributeNames={'#s': 'Status','#u': 'BorrowerID'},
+            ExpressionAttributeValues={':s': 'Not Available',':u': userID},
+            ReturnValues="UPDATED_NEW"
+        )
+
+        # Update the status in the BorrowReturnRecords table
+        BorrowReturnRecordsTable.update_item(
+            Key={'record_id': record_id},
+            UpdateExpression="set #s = :s",
+            ExpressionAttributeNames={'#s': 'status'},
+            ExpressionAttributeValues={':s': 'approved'},
+            ReturnValues="UPDATED_NEW"
+        )
+
+        return jsonify(success=True)
+    except Exception as e:
+        print(f"Error: {e}")
+        return jsonify(success=False), 500
+
 @app.route('/admin_list')
 def admin_list():
     return render_template('admin_list.html')

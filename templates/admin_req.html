@@ -66,7 +66,7 @@
                             <td>{{ record.due_date }}</td>
                             <td>{{ record.type }}</td>
                             <td>
-                                <button class="action-button">
+                                <button class="action-button" data-record-id="{{ record.record_id }}" data-equipment-id="{{ record.equipment_id }}" data-user-id="{{record.user_id}}">
                                     {% if record.type == 'borrow' %}
                                         Approve
                                     {% else %}
@@ -81,5 +81,36 @@
             </div>
         </section>
     </main>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const actionButtons = document.querySelectorAll(".action-button");
+
+        actionButtons.forEach(button => {
+            button.addEventListener("click", function () {
+                const row = this.closest("tr");
+                const recordId = this.getAttribute("data-record-id");
+                const equipmentId = this.getAttribute("data-equipment-id");
+                const userId = this.getAttribute("data-user-id");
+                console.log(recordId, equipmentId, userId);
+                fetch(`/approve/${recordId}/${equipmentId}/${userId}`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert("Record approved successfully.");
+                        location.reload();  // Reload the page to reflect changes
+                    } else {
+                        alert("Failed to approve the record.");
+                    }
+                })
+                .catch(error => console.error("Error:", error));
+            });
+        });
+    });
+</script>
 </body>
 </html>
