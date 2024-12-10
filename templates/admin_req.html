@@ -66,7 +66,7 @@
                             <td>{{ record.due_date }}</td>
                             <td>{{ record.type }}</td>
                             <td>
-                                <button class="action-button" data-record-id="{{ record.record_id }}" data-equipment-id="{{ record.equipment_id }}" data-user-id="{{record.user_id}}" request-type="{{record.type}}">
+                                <button class="action-button" data-record-id="{{ record.record_id }}" data-equipment-id="{{ record.equipment_id }}" data-equipment-name="{{record.equipment_name}}" data-user-id="{{record.user_id}}" request-type="{{record.type}}">
                                     {% if record.type == 'borrow' %}
                                         Approve
                                     {% else %}
@@ -88,12 +88,13 @@
         actionButtons.forEach(button => {
             button.addEventListener("click", function () {
                 const row = this.closest("tr");
-                const recordId = this.getAttribute("data-record-id");
+                //const recordId = this.getAttribute("data-record-id");
                 const equipmentId = this.getAttribute("data-equipment-id");
                 const userId = this.getAttribute("data-user-id");
                 const reqType = this.getAttribute("request-type");
-                console.log(recordId, equipmentId, userId);
-                fetch(`/approve/${reqType}/${recordId}/${equipmentId}/${userId}`, {
+                const equipmentName = this.getAttribute("data-equipment-name");
+                //console.log(recordId, equipmentId, userId);
+                fetch(`/approve/${reqType}/${equipmentName}/${equipmentId}/${userId}`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"

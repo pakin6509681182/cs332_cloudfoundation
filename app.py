@@ -235,9 +235,9 @@ def borrow_equipment(equipment_id):
         # Step 3: Update the equipment status to Pending
         EquipmentTable.update_item(
             Key={'EquipmentID': equipment_id},
-            UpdateExpression="set #s = :s, DueDate = :d",
+            UpdateExpression="set #s = :s",
             ExpressionAttributeNames={'#s': 'Status'},
-            ExpressionAttributeValues={':s': 'Pending', ':d': due_date},
+            ExpressionAttributeValues={':s': 'Pending'},
             ReturnValues="UPDATED_NEW"
         )
         # Step 4: Insert a new record into BorrowReturnRecords
@@ -253,7 +253,7 @@ def borrow_equipment(equipment_id):
                 'equipment_name': equipment_name,
                 'type': 'borrow',
                 'record_date': record_date,
-                'due_date': due_date,
+                'due_date': '-',
                 'status': 'pending_borrow'
             }
         )
@@ -352,28 +352,38 @@ def admin_req():
         return "An error occurred while fetching data from DynamoDB."
     return render_template('admin_req.html')
 
-@app.route('/approve/<reqType>/<record_id>/<equipment_id>/<userID>', methods=['POST'])
-def approve_record(reqType,record_id, equipment_id, userID):
+@app.route('/approve/<reqType>/<equipment_name>/<equipment_id>/<user_id>', methods=['POST'])
+def approve_record(reqType,equipment_name, equipment_id, user_id):
     try:
-        print(userID)
+        print(user_id)
+        record_id = str(uuid.uuid4())
         if reqType == 'borrow':
+            local_tz = pytz.timezone('Asia/Bangkok')  # Replace with your local timezone
+            now = datetime.now(local_tz)
+            due_date = (now + timedelta(weeks=1)).strftime('%Y-%m-%d %H:%M:%S')
+
             # Update the status in the Equipment table
             EquipmentTable.update_item(
                 Key={'EquipmentID': equipment_id},
-                UpdateExpression="set #s = :s, #u = :u",
+                UpdateExpression="set #s = :s, #u = :u , DueDate = :d , BorrowDate = :bd",
                 ExpressionAttributeNames={'#s': 'Status','#u': 'BorrowerID'},
-                ExpressionAttributeValues={':s': 'Not Available',':u': userID},
+                ExpressionAttributeValues={':s': 'Not Available',':u': user_id , ':d': due_date , ':bd': now.strftime('%Y-%m-%d %H:%M:%S')},
                 ReturnValues="UPDATED_NEW"
             )
 
             # Update the status in the BorrowReturnRecords table
-            BorrowReturnRecordsTable.update_item(
-                Key={'record_id': record_id},
-                UpdateExpression="set #s = :s",
-                ExpressionAttributeNames={'#s': 'status'},
-                ExpressionAttributeValues={':s': 'approved'},
-                ReturnValues="UPDATED_NEW"
-            )
+            BorrowReturnRecordsTable.put_item(
+            Item={
+                'record_id': record_id,
+                'user_id': user_id,
+                'equipment_id': equipment_id,
+                'equipment_name': equipment_name,
+                'type': 'borrow',
+                'record_date': now.strftime('%Y-%m-%d %H:%M:%S'),
+                'due_date': due_date,
+                'status': 'approved'
+            }
+        )
         elif reqType == 'return':
             # Update the status in the Equipment table
             EquipmentTable.update_item(
