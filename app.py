@@ -299,12 +299,20 @@ def return_item():
         local_tz = pytz.timezone('Asia/Bangkok')  # Replace with your local timezone
         now = datetime.now(local_tz)
         
-        record_id = request.form['record_id']
+        #record_id = request.form['record_id']
         user_id = request.form['user_id']
         equipment_id = request.form['equipment_id']
         equipment_name = request.form['equipment_name']
         record_date = request.form['record_date']
         due_date = request.form['due_date']
+
+        response = BorrowReturnRecordsTable.scan(
+            FilterExpression=Attr('equipment_id').eq(equipment_id) & Attr('status').eq('pending_return')
+        )
+        pending_request = response['Items']
+        if pending_request:
+            flash('There is already a pending return request for this equipment.', 'info')
+            return redirect(url_for('list'))
 
         record_id = str(uuid.uuid4())
         user_id = session.get('username')  # Assuming user_id is stored in session
@@ -321,6 +329,7 @@ def return_item():
                 'status': 'pending_return'
             }
         )
+        flash('Return request submitted successfully.', 'success')
         return redirect(url_for('list'))
     except Exception as e:
         return jsonify({'error': str(e)}), 500
