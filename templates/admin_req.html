@@ -88,13 +88,13 @@
         actionButtons.forEach(button => {
             button.addEventListener("click", function () {
                 const row = this.closest("tr");
-                //const recordId = this.getAttribute("data-record-id");
+                const recordId = this.getAttribute("data-record-id");
                 const equipmentId = this.getAttribute("data-equipment-id");
                 const userId = this.getAttribute("data-user-id");
                 const reqType = this.getAttribute("request-type");
                 const equipmentName = this.getAttribute("data-equipment-name");
                 //console.log(recordId, equipmentId, userId);
-                fetch(`/approve/${reqType}/${equipmentName}/${equipmentId}/${userId}`, {
+                fetch(`/approve/${reqType}/${equipmentName}/${equipmentId}/${userId}/${recordId}`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json"

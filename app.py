@@ -254,7 +254,8 @@ def borrow_equipment(equipment_id):
                 'type': 'borrow',
                 'record_date': record_date,
                 'due_date': '-',
-                'status': 'pending_borrow'
+                'status': 'pending_borrow',
+                'isApprovedYet': 'false'
             }
         )
         return jsonify(success=True)
@@ -306,13 +307,13 @@ def return_item():
         record_date = request.form['record_date']
         due_date = request.form['due_date']
 
-        response = BorrowReturnRecordsTable.scan(
-            FilterExpression=Attr('equipment_id').eq(equipment_id) & Attr('status').eq('pending_return')
-        )
-        pending_request = response['Items']
-        if pending_request:
-            flash('There is already a pending return request for this equipment.', 'info')
-            return redirect(url_for('list'))
+        # response = BorrowReturnRecordsTable.scan(
+        #     FilterExpression=Attr('equipment_id').eq(equipment_id) & Attr('status').eq('pending_return')
+        # )
+        # pending_request = response['Items']
+        # if pending_request:
+        #     flash('There is already a pending return request for this equipment.', 'info')
+        #     return redirect(url_for('list'))
 
         record_id = str(uuid.uuid4())
         user_id = session.get('username')  # Assuming user_id is stored in session
@@ -326,7 +327,8 @@ def return_item():
                 'type': 'return',
                 'record_date': record_date,
                 'due_date': due_date,
-                'status': 'pending_return'
+                'status': 'pending_return',
+                'isApprovedYet': 'false'
             }
         )
         flash('Return request submitted successfully.', 'success')
@@ -343,7 +345,7 @@ def admin_req():
             return redirect(url_for('login'))  # Redirect to login if user is not logged in
 
         response = BorrowReturnRecordsTable.scan(
-            FilterExpression=(Attr('status').eq('pending_borrow') | Attr('status').eq('pending_return'))
+            FilterExpression=(Attr('status').eq('pending_borrow') | Attr('status').eq('pending_return') and Attr('isApprovedYet').eq('false'))
         )
         records = response['Items']
         return render_template('admin_req.html', records=records)
@@ -352,16 +354,16 @@ def admin_req():
         return "An error occurred while fetching data from DynamoDB."
     return render_template('admin_req.html')
 
-@app.route('/approve/<reqType>/<equipment_name>/<equipment_id>/<user_id>', methods=['POST'])
-def approve_record(reqType,equipment_name, equipment_id, user_id):
+@app.route('/approve/<reqType>/<equipment_name>/<equipment_id>/<user_id>/<record_id>', methods=['POST'])
+def approve_record(reqType,equipment_name, equipment_id, user_id,record_id):
     try:
         print(user_id)
-        record_id = str(uuid.uuid4())
+        record_idNew = str(uuid.uuid4())
+        local_tz = pytz.timezone('Asia/Bangkok')  # Replace with your local timezone
+        now = datetime.now(local_tz)
         if reqType == 'borrow':
-            local_tz = pytz.timezone('Asia/Bangkok')  # Replace with your local timezone
-            now = datetime.now(local_tz)
             due_date = (now + timedelta(weeks=1)).strftime('%Y-%m-%d %H:%M:%S')
-
+            print(user_id)
             # Update the status in the Equipment table
             EquipmentTable.update_item(
                 Key={'EquipmentID': equipment_id},
@@ -374,16 +376,22 @@ def approve_record(reqType,equipment_name, equipment_id, user_id):
             # Update the status in the BorrowReturnRecords table
             BorrowReturnRecordsTable.put_item(
             Item={
-                'record_id': record_id,
+                'record_id': record_idNew,
                 'user_id': user_id,
                 'equipment_id': equipment_id,
                 'equipment_name': equipment_name,
                 'type': 'borrow',
                 'record_date': now.strftime('%Y-%m-%d %H:%M:%S'),
                 'due_date': due_date,
-                'status': 'approved'
+                'status': 'approved',
+                'isApprovedYet': 'true'
             }
-        )
+            )
+            BorrowReturnRecordsTable.update_item(
+                Key={'record_id': record_id},
+                UpdateExpression="SET isApprovedYet = :a",
+                ExpressionAttributeValues={':a': 'true'},
+            )
         elif reqType == 'return':
             # Update the status in the Equipment table
             EquipmentTable.update_item(
@@ -394,13 +402,23 @@ def approve_record(reqType,equipment_name, equipment_id, user_id):
                 ReturnValues="UPDATED_NEW"
             )
 
-            # Update the status in the BorrowReturnRecords table
+            BorrowReturnRecordsTable.put_item(
+            Item={
+                'record_id': record_idNew,
+                'user_id': user_id,
+                'equipment_id': equipment_id,
+                'equipment_name': equipment_name,
+                'type': 'return',
+                'record_date': now.strftime('%Y-%m-%d %H:%M:%S'),
+                'due_date': '-',
+                'status': 'approved',
+                'isApprovedYet': 'true'
+            }
+            )
             BorrowReturnRecordsTable.update_item(
                 Key={'record_id': record_id},
-                UpdateExpression="set #s = :s",
-                ExpressionAttributeNames={'#s': 'status'},
-                ExpressionAttributeValues={':s': 'approved'},
-                ReturnValues="UPDATED_NEW"
+                UpdateExpression="SET isApprovedYet = :a",
+                ExpressionAttributeValues={':a': 'true'},
             )
         return jsonify(success=True)
     except Exception as e:
