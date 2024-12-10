@@ -323,7 +323,7 @@ def return_item():
                 'user_id': user_id,
                 'equipment_id': equipment_id,
                 'equipment_name': equipment_name,
-                'type': 'borrow',
+                'type': 'return',
                 'record_date': record_date,
                 'due_date': due_date,
                 'status': 'pending_return'
@@ -343,7 +343,7 @@ def admin_req():
             return redirect(url_for('login'))  # Redirect to login if user is not logged in
 
         response = BorrowReturnRecordsTable.scan(
-            FilterExpression=Attr('status').eq('pending_borrow')
+            FilterExpression=(Attr('status').eq('pending_borrow') | Attr('status').eq('pending_return'))
         )
         records = response['Items']
         return render_template('admin_req.html', records=records)
@@ -352,28 +352,46 @@ def admin_req():
         return "An error occurred while fetching data from DynamoDB."
     return render_template('admin_req.html')
 
-@app.route('/approve/<record_id>/<equipment_id>/<userID>', methods=['POST'])
-def approve_record(record_id, equipment_id, userID):
+@app.route('/approve/<reqType>/<record_id>/<equipment_id>/<userID>', methods=['POST'])
+def approve_record(reqType,record_id, equipment_id, userID):
     try:
         print(userID)
-        # Update the status in the Equipment table
-        EquipmentTable.update_item(
-            Key={'EquipmentID': equipment_id},
-            UpdateExpression="set #s = :s, #u = :u",
-            ExpressionAttributeNames={'#s': 'Status','#u': 'BorrowerID'},
-            ExpressionAttributeValues={':s': 'Not Available',':u': userID},
-            ReturnValues="UPDATED_NEW"
-        )
+        if reqType == 'borrow':
+            # Update the status in the Equipment table
+            EquipmentTable.update_item(
+                Key={'EquipmentID': equipment_id},
+                UpdateExpression="set #s = :s, #u = :u",
+                ExpressionAttributeNames={'#s': 'Status','#u': 'BorrowerID'},
+                ExpressionAttributeValues={':s': 'Not Available',':u': userID},
+                ReturnValues="UPDATED_NEW"
+            )
 
-        # Update the status in the BorrowReturnRecords table
-        BorrowReturnRecordsTable.update_item(
-            Key={'record_id': record_id},
-            UpdateExpression="set #s = :s",
-            ExpressionAttributeNames={'#s': 'status'},
-            ExpressionAttributeValues={':s': 'approved'},
-            ReturnValues="UPDATED_NEW"
-        )
+            # Update the status in the BorrowReturnRecords table
+            BorrowReturnRecordsTable.update_item(
+                Key={'record_id': record_id},
+                UpdateExpression="set #s = :s",
+                ExpressionAttributeNames={'#s': 'status'},
+                ExpressionAttributeValues={':s': 'approved'},
+                ReturnValues="UPDATED_NEW"
+            )
+        elif reqType == 'return':
+            # Update the status in the Equipment table
+            EquipmentTable.update_item(
+                Key={'EquipmentID': equipment_id},
+                UpdateExpression="set #s = :s, #d = :d, #borrowerId = :b, #borrowerDate = :bd",
+                ExpressionAttributeNames={'#s': 'Status','#d': 'DueDate' ,'#borrowerId': 'BorrowerID', '#borrowerDate': 'BorrowDate'},
+                ExpressionAttributeValues={':s': 'Available',':d': '-' , ':b': '-', ':bd': '-'},
+                ReturnValues="UPDATED_NEW"
+            )
 
+            # Update the status in the BorrowReturnRecords table
+            BorrowReturnRecordsTable.update_item(
+                Key={'record_id': record_id},
+                UpdateExpression="set #s = :s",
+                ExpressionAttributeNames={'#s': 'status'},
+                ExpressionAttributeValues={':s': 'approved'},
+                ReturnValues="UPDATED_NEW"
+            )
         return jsonify(success=True)
     except Exception as e:
         print(f"Error: {e}")
