@@ -7,6 +7,7 @@
     <title>ToolTrack</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/detailscamera.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
 </head>
 
 <body>
@@ -121,33 +122,57 @@
 
         borrowButtons.forEach(button => {
             button.addEventListener("click", function () {
-                console.log("Borrow button clicked"); // Debug log
                 const row = this.closest("tr");
                 const equipmentId = row.getAttribute("data-equipment-id");
-                console.log("Equipment ID:", equipmentId); // Debug log
-
-                fetch(`/borrow/${equipmentId}`, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({ status: "Pending" })
-                })
-                .then(response => {
-                    console.log("Fetch response:", response); // Debug log
-                    return response.json();
-                })
-                .then(data => {
-                    console.log("Response data:", data); // Debug log
-                    if (data.success) {
-                        row.querySelector("td:nth-child(3)").innerText = "Pending";
-                        row.querySelector("td:nth-child(3)").style.color = "yellow";
-                        this.disabled = true;
-                    } else {
-                        alert("Failed to borrow the equipment.");
+        
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "Do you want to borrow this equipment?",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, borrow it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        fetch(`/borrow/${equipmentId}`, {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json"
+                            },
+                            body: JSON.stringify({ status: "Pending" })
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                // row.querySelector("td:nth-child(3)").innerText = "Pending";
+                                // row.querySelector("td:nth-child(3)").style.color = "yellow";
+                                this.disabled = true;
+                                Swal.fire(
+                                    'Borrowed!',
+                                    'The equipment has been borrowed.',
+                                    'success'
+                                ).then(() => {
+                                    window.location.reload();
+                                });
+                            } else {
+                                Swal.fire(
+                                    'Failed!',
+                                    'Failed to borrow the equipment.',
+                                    'error'
+                                );
+                            }
+                        })
+                        .catch(error => {
+                            console.error("Error:", error);
+                            Swal.fire(
+                                'Error!',
+                                'An error occurred while borrowing the equipment.',
+                                'error'
+                            );
+                        });
                     }
-                })
-                .catch(error => console.error("Error:", error));
+                });
             });
         });
     });
