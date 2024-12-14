@@ -138,5 +138,39 @@
         });
     });
 </script>
+</script>
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+    {% for category, message in messages %}
+    <script>
+      if ('{{ category }}' == 'success') {
+        Swal.fire({
+          icon: 'success',
+          title: '{{ message }}',
+          text: 'Welcome to ToolTrack!',
+          showCancelButton: true,
+          confirmButtonText: 'Go to Request',
+          cancelButtonText: 'Go to List',
+          reverseButtons: true
+        }).then((result) => {
+            if (result.dismiss === Swal.DismissReason.cancel) {
+                window.location.href = "{{ url_for('admin_list') }}";
+            } else if (result.isConfirmed) {
+                Swal.close();
+            }
+        });
+      } else if ('{{ category }}' == 'error') {
+          Swal.fire({
+              icon: 'error',
+              title: '{{ message }}',
+              showConfirmButton: true
+          })
+      }
+     
+      
+  </script>
+    {% endfor %}
+{% endif %}
+{% endwith %}
 </body>
 </html>
