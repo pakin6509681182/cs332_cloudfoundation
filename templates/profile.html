@@ -89,14 +89,14 @@
                 Swal.fire({
                   icon: 'success',
                   title: '{{ message }}',
-                  text: 'Welcome,',
+                  text: 'Welcome to ToolTrack!',
                   showCancelButton: true,
-                  confirmButtonText: 'Go to Homepage',
+                  confirmButtonText: 'Go to Equipment',
                   cancelButtonText: 'Go to My Profile',
                   reverseButtons: true
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        window.location.href = "{{ url_for('home') }}";
+                        window.location.href = "{{ url_for('equipment') }}";
                     } else if (result.dismiss === Swal.DismissReason.cancel) {
                         Swal.close();
                     }
