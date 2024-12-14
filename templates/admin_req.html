@@ -7,7 +7,7 @@
     <title>ToolTrack</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/admin_req.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&display=swap" rel="stylesheet">
-
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
 </head>
 
 <body>
@@ -87,29 +87,53 @@
 
         actionButtons.forEach(button => {
             button.addEventListener("click", function () {
-                const row = this.closest("tr");
-                const recordId = this.getAttribute("data-record-id");
-                const equipmentId = this.getAttribute("data-equipment-id");
-                const userId = this.getAttribute("data-user-id");
-                const reqType = this.getAttribute("request-type");
-                const equipmentName = this.getAttribute("data-equipment-name");
-                //console.log(recordId, equipmentId, userId);
-                fetch(`/approve/${reqType}/${equipmentName}/${equipmentId}/${userId}/${recordId}`, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "You won't be able to revert this!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, approve it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        const row = this.closest("tr");
+                        const recordId = this.getAttribute("data-record-id");
+                        const equipmentId = this.getAttribute("data-equipment-id");
+                        const userId = this.getAttribute("data-user-id");
+                        const reqType = this.getAttribute("request-type");
+                        const equipmentName = this.getAttribute("data-equipment-name");
+                        //console.log(recordId, equipmentId, userId);
+                        fetch(`/approve/${reqType}/${equipmentName}/${equipmentId}/${userId}/${recordId}`, {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json"
+                            }
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire({
+                                    title: 'Approved!',
+                                    text: 'The record has been approved.',
+                                    icon: 'success'
+                                }).then(() => {
+                                    location.reload();  // Reload the page to reflect changes
+                                });
+                                //alert("Record approved successfully.");
+                                //location.reload();  // Reload the page to reflect changes
+                            } else {
+                                Swal.fire({
+                                    title: 'Failed!',
+                                    text: 'Failed to approve the record.',
+                                    icon: 'error'
+                                });
+                                //alert("Failed to approve the record.");
+                            }
+                        })
+                        .catch(error => console.error("Error:", error));
                     }
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        alert("Record approved successfully.");
-                        location.reload();  // Reload the page to reflect changes
-                    } else {
-                        alert("Failed to approve the record.");
-                    }
-                })
-                .catch(error => console.error("Error:", error));
+                });
             });
         });
     });
